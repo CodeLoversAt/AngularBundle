@@ -119,7 +119,7 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
             );
 
             // notify listeners to allow output modification
-            $event = new LoginEvent();
+            $event = new LoginEvent($user);
             $event->setOutput($output);
 
             $this->dispatcher->dispatch(AuthEvents::LOGIN_SUCCESS, $event);
