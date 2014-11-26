@@ -4,4 +4,4 @@ parameters:
 services:
     code_lovers_angular.handler.authentication:
         class: %code_lovers_angular.handler.authentication.class%
-        arguments: [@router, @translator, %code_lovers_angular.login.default_route%]
+        arguments: [@router, @translator, %code_lovers_angular.login.default_route%, @event_dispatcher]
