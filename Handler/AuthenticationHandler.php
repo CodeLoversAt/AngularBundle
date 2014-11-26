@@ -10,7 +10,10 @@
 namespace CodeLovers\AngularBundle\Handler;
 
 
+use CodeLovers\AngularBundle\Events\AuthEvents;
+use CodeLovers\AngularBundle\Events\LoginEvent;
 use FOS\UserBundle\Model\User;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,11 +43,23 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
      */
     private $defaultRoute;
 
-    public function __construct(RouterInterface $router, TranslatorInterface $translator, $defaultRoute = '')
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
+    /**
+     * @param RouterInterface $router
+     * @param TranslatorInterface $translator
+     * @param string $defaultRoute
+     * @param EventDispatcherInterface $dispatcher
+     */
+    public function __construct(RouterInterface $router, TranslatorInterface $translator, $defaultRoute = '', EventDispatcherInterface $dispatcher)
     {
         $this->defaultRoute = $defaultRoute;
         $this->router = $router;
         $this->translator = $translator;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -103,7 +118,13 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
                 'email'  => $user->getEmail()
             );
 
-            return new JsonResponse($output);
+            // notify listeners to allow output modification
+            $event = new LoginEvent();
+            $event->setOutput($output);
+
+            $this->dispatcher->dispatch(AuthEvents::LOGIN_SUCCESS, $event);
+
+            return new JsonResponse($event->getOutput());
         } else {
             if ($targetPath = $request->getSession()->get('_security.target_path')) {
                 $url = $targetPath;
