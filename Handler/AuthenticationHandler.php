@@ -81,7 +81,7 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
                 )
             );
 
-            return new JsonResponse($output, Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse($output, 401);
         } else {
             $request->getSession()->set(SecurityContextInterface::AUTHENTICATION_ERROR, $exception);
 
