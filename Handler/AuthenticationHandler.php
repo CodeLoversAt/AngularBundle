@@ -12,6 +12,7 @@ namespace CodeLovers\AngularBundle\Handler;
 
 use CodeLovers\AngularBundle\Events\AuthEvents;
 use CodeLovers\AngularBundle\Events\LoginEvent;
+use CodeLovers\AngularBundle\Helper\UserDataGeneratorInterface;
 use FOS\UserBundle\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -49,17 +50,24 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
     private $dispatcher;
 
     /**
-     * @param RouterInterface $router
-     * @param TranslatorInterface $translator
-     * @param string $defaultRoute
-     * @param EventDispatcherInterface $dispatcher
+     * @var UserDataGeneratorInterface
      */
-    public function __construct(RouterInterface $router, TranslatorInterface $translator, $defaultRoute = '', EventDispatcherInterface $dispatcher)
+    private $generator;
+
+    /**
+     * @param RouterInterface            $router
+     * @param TranslatorInterface        $translator
+     * @param string                     $defaultRoute
+     * @param EventDispatcherInterface   $dispatcher
+     * @param UserDataGeneratorInterface $generator
+     */
+    public function __construct(RouterInterface $router, TranslatorInterface $translator, $defaultRoute = '', EventDispatcherInterface $dispatcher, UserDataGeneratorInterface $generator)
     {
         $this->defaultRoute = $defaultRoute;
         $this->router = $router;
         $this->translator = $translator;
         $this->dispatcher = $dispatcher;
+        $this->generator = $generator;
     }
 
     /**
@@ -111,12 +119,7 @@ class AuthenticationHandler implements AuthenticationSuccessHandlerInterface, Au
                 $outputRoles[] = $this->translator->trans('roles.' . $role->getRole(), array(), 'CodeLoversAngularBundle');
             }
 
-            $output = array(
-                'id'     => $request->getSession()->getId(),
-                'userId' => $user->getId(),
-                'roles'  => $outputRoles,
-                'email'  => $user->getEmail()
-            );
+            $output = $this->generator->getUserData($request, $token);
 
             // notify listeners to allow output modification
             $event = new LoginEvent($user);

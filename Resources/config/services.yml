@@ -1,7 +1,12 @@
 parameters:
     code_lovers_angular.handler.authentication.class: CodeLovers\AngularBundle\Handler\AuthenticationHandler
+    code_lovers_angular.generator.user_data.class: CodeLovers\AngularBundle\Hellper\UserDataGenerator
 
 services:
     code_lovers_angular.handler.authentication:
         class: %code_lovers_angular.handler.authentication.class%
-        arguments: [@router, @translator, %code_lovers_angular.login.default_route%, @event_dispatcher]
+        arguments: [@router, @translator, %code_lovers_angular.login.default_route%, @event_dispatcher, @code_lovers_angular.generator.user_data]
+
+    code_lovers_angular.generator.user_data:
+        class: %code_lovers_angular.generator.user_data.class%
+        arguments: [@translator]
